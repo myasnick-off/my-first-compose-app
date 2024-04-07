@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">My First Compose App</string>
+    <string name="post_content">Some content long text describing the topic of the post</string>
 </resources>
