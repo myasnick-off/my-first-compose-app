@@ -19,8 +19,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,13 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myfirstcomposeapp.ui.theme.MainViewModel
+import com.example.myfirstcomposeapp.domain.InstagramModel
 
 @Composable
-fun InstagramProfileCard(vm: MainViewModel) {
-
-    val isFollowState = vm.isFollowing.observeAsState(false)
-
+fun InstagramProfileCard(
+    model: InstagramModel,
+    followClickListener: (InstagramModel) -> Unit
+) {
     Card(
         modifier = Modifier.padding(8.dp),
         shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp),
@@ -66,36 +64,36 @@ fun InstagramProfileCard(vm: MainViewModel) {
                 UserStatistics("Following", "12")
             }
             Text(
-                text = "Instagram",
+                text = "Instagram${model.id}",
                 fontSize = 32.sp,
                 fontFamily = FontFamily.Cursive
             )
             Text(
-                text = "#hashteg",
+                text = model.title,
                 fontSize = 14.sp
             )
             Text(
                 text = "www.facebook.com/account",
                 fontSize = 14.sp
             )
-            FollowButton(followedState = isFollowState) { vm.changeFollowingState() }
+            FollowButton(followedState = model.isFollowed) { followClickListener(model) }
         }
     }
 }
 
 @Composable
-private fun FollowButton(followedState: State<Boolean>, onClickListener: () -> Unit) {
+private fun FollowButton(followedState: Boolean, onClickListener: () -> Unit) {
     Button(
         onClick = { onClickListener() },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (followedState.value) {
+            containerColor = if (followedState) {
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
             } else {
                 MaterialTheme.colorScheme.primary
             }
         )
     ) {
-        val text = if (followedState.value) "Unfollow" else "Follow"
+        val text = if (followedState) "Unfollow" else "Follow"
         Text(text = text)
     }
 }
