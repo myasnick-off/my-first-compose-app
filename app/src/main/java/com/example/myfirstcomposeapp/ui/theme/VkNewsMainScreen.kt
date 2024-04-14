@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,21 +23,28 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.example.myfirstcomposeapp.domain.FeedPost
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VkMainScreen() {
+fun VkMainScreen(vm: MainViewModel) {
     val snackbarHostState = SnackbarHostState()
     val scope = rememberCoroutineScope()
-    val fabIsVisibleState = remember {
+
+    var fabIsVisible by remember {
         mutableStateOf(true)
     }
 
@@ -82,7 +87,7 @@ fun VkMainScreen() {
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            if (fabIsVisibleState.value) {
+            if (fabIsVisible) {
                 FloatingActionButton(
                     onClick = {
                         scope.launch {
@@ -92,7 +97,7 @@ fun VkMainScreen() {
                                 duration = SnackbarDuration.Long
                             )
                             if (action == SnackbarResult.ActionPerformed) {
-                                fabIsVisibleState.value = false
+                                fabIsVisible = false
                             }
                         }
                     }
@@ -102,15 +107,17 @@ fun VkMainScreen() {
             }
         },
     ) {
-        Box(
-            Modifier
+        val feedPostState = vm.feedPostData.observeAsState(FeedPost())
+        PostCard(
+            modifier = Modifier
                 .padding(it)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            //InstagramProfileCard()
-            PostCard()
-        }
+                .padding(8.dp),
+            feedPostState.value,
+            onViewClickListener = vm::updatePostStatistics,
+            onShareClickListener = vm::updatePostStatistics,
+            onCommentClickListener = vm::updatePostStatistics,
+            onLikeClickListener = vm::updatePostStatistics,
+        )
     }
 }
 

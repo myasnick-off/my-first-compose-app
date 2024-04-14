@@ -1,6 +1,7 @@
 package com.example.myfirstcomposeapp.ui.theme
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,35 +25,49 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myfirstcomposeapp.R
+import com.example.myfirstcomposeapp.domain.FeedPost
+import com.example.myfirstcomposeapp.domain.StatisticItem
+import com.example.myfirstcomposeapp.domain.StatisticType
 
-@Preview
 @Composable
-fun PostCard() {
-    Card(modifier = Modifier.padding(8.dp)) {
+fun PostCard(
+    modifier: Modifier = Modifier,
+    post: FeedPost,
+    onViewClickListener: (StatisticItem) -> Unit,
+    onShareClickListener: (StatisticItem) -> Unit,
+    onCommentClickListener: (StatisticItem) -> Unit,
+    onLikeClickListener: (StatisticItem) -> Unit
+) {
+    Card(modifier = modifier) {
         Column(
             modifier = Modifier.padding(8.dp)
         ) {
-            PostHeader()
+            PostHeader(post)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = stringResource(R.string.post_content))
+            Text(text = stringResource(post.contentResId))
             Spacer(modifier = Modifier.height(8.dp))
             Image(
                 modifier = Modifier.fillMaxWidth(),
-                painter = painterResource(id = R.drawable.some_content),
+                painter = painterResource(id = post.imageResId),
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Statistics()
+            Statistics(
+                post.statistic,
+                onViewClickListener,
+                onShareClickListener,
+                onCommentClickListener,
+                onLikeClickListener
+            )
         }
     }
 }
 
 @Composable
-private fun PostHeader() {
+private fun PostHeader(post: FeedPost) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -61,16 +76,16 @@ private fun PostHeader() {
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape),
-            painter = painterResource(id = R.drawable.avatar),
+            painter = painterResource(id = post.profileResId),
             contentDescription = null
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = "dev/null")
+            Text(text = post.title)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "14:00")
+            Text(text = post.postDate)
         }
         Icon(
             imageVector = Icons.Rounded.MoreVert,
@@ -81,26 +96,52 @@ private fun PostHeader() {
 }
 
 @Composable
-private fun Statistics() {
+private fun Statistics(
+    statisticList: List<StatisticItem>,
+    onViewClickListener: (StatisticItem) -> Unit,
+    onShareClickListener: (StatisticItem) -> Unit,
+    onCommentClickListener: (StatisticItem) -> Unit,
+    onLikeClickListener: (StatisticItem) -> Unit
+) {
     Row {
         Row(modifier = Modifier.weight(1f)) {
-            IconWithText(iconResId = R.drawable.ic_views_count, text = "342")
+            val viewsItem = statisticList.getItemByType(StatisticType.VIEWS)
+            IconWithCounter(iconResId = R.drawable.ic_views_count, count = viewsItem.count) {
+                onViewClickListener(viewsItem)
+            }
         }
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
-            IconWithText(iconResId = R.drawable.ic_repost, text = "121")
-            IconWithText(iconResId = R.drawable.ic_comment, text = "8")
-            IconWithText(iconResId = R.drawable.ic_like, text = "56")
+            val repostItem = statisticList.getItemByType(StatisticType.REPOST)
+            val commentItem = statisticList.getItemByType(StatisticType.COMMENT)
+            val likeItem = statisticList.getItemByType(StatisticType.LIKE)
+            IconWithCounter(iconResId = R.drawable.ic_repost, count = repostItem.count) {
+                onShareClickListener(repostItem)
+            }
+            IconWithCounter(iconResId = R.drawable.ic_comment, count = commentItem.count) {
+                onCommentClickListener(commentItem)
+            }
+            IconWithCounter(iconResId = R.drawable.ic_like, count = likeItem.count) {
+                onLikeClickListener(likeItem)
+            }
         }
     }
 }
 
+private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticItem =
+    find { it.type == type } ?: error("Unreachable state!")
+
 @Composable
-private fun IconWithText(iconResId: Int, text: String) {
+private fun IconWithCounter(
+    iconResId: Int,
+    count: Int,
+    itemClickListener: () -> Unit
+) {
     Row(
+        modifier = Modifier.clickable { itemClickListener() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(painter = painterResource(id = iconResId), contentDescription = null)
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text = text)
+        Text(text = count.toString())
     }
 }
