@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My First Compose App</string>
+    <string name="post_content">Some content long text describing the topic of the post</string>
+    <string name="navigation_title_home">Home</string>
+    <string name="navigation_title_favorite">Favorite</string>
+    <string name="navigation_title_profile">Profile</string>
 </resources>

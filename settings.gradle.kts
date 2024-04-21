@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "My First Compose App"
 include(":app")
- 
+include(":mylibrary")
