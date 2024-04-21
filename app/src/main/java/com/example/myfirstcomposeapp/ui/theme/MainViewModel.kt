@@ -22,11 +22,17 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private val postsList = mutableListOf<FeedPost>().apply {
+        repeat(10) {
+            add(FeedPost(id = it))
+        }
+    }
+
     private val _models = MutableLiveData<List<InstagramModel>>(instagramList)
     val models: LiveData<List<InstagramModel>> = _models
 
-    private val _feedPostData = MutableLiveData(FeedPost())
-    val feedPostData: LiveData<FeedPost> = _feedPostData
+    private val _feedPostData = MutableLiveData<List<FeedPost>>(postsList)
+    val feedPostData: LiveData<List<FeedPost>> = _feedPostData
 
     fun changeFollowingState(model: InstagramModel) {
         val modifiedList = models.value.orEmpty().toMutableList()
@@ -40,15 +46,34 @@ class MainViewModel : ViewModel() {
         _models.value = modifiedList
     }
 
-    fun updatePostStatistics(item: StatisticItem) {
-        val oldStatistic = feedPostData.value?.statistic ?: error("Illegal State!")
-        val newStatistic = oldStatistic.toMutableList().apply {
-            replaceAll { currentItem ->
-                if (currentItem.type == item.type) {
-                    currentItem.copy(count = currentItem.count + 1)
-                } else currentItem
+    fun deleteProfileCard(model: InstagramModel) {
+        val modifiedList = models.value.orEmpty().toMutableList()
+        modifiedList.remove(model)
+        _models.value = modifiedList
+    }
+
+    fun updatePostStatistics(feedPost: FeedPost, item: StatisticItem) {
+        val postList = feedPostData.value?.toMutableList() ?: mutableListOf()
+        val currentPostIndex = postList.indexOf(feedPost)
+
+        if (currentPostIndex > -1) {
+            val oldStatistic = feedPost.statistic
+            val newStatistic = oldStatistic.toMutableList().apply {
+                replaceAll { currentItem ->
+                    if (currentItem.type == item.type) {
+                        currentItem.copy(count = currentItem.count + 1)
+                    } else currentItem
+                }
             }
+            postList[currentPostIndex] = feedPost.copy(statistic = newStatistic)
+            _feedPostData.value = postList
         }
-        _feedPostData.value = feedPostData.value?.copy(statistic = newStatistic)
+    }
+
+    fun deleteFeedPost(feedPost: FeedPost) {
+        val postList = feedPostData.value?.toMutableList() ?: mutableListOf()
+        _feedPostData.value = postList.apply {
+            remove(feedPost)
+        }
     }
 }

@@ -33,14 +33,13 @@ import com.example.myfirstcomposeapp.domain.StatisticType
 
 @Composable
 fun PostCard(
-    modifier: Modifier = Modifier,
     post: FeedPost,
     onViewClickListener: (StatisticItem) -> Unit,
     onShareClickListener: (StatisticItem) -> Unit,
     onCommentClickListener: (StatisticItem) -> Unit,
     onLikeClickListener: (StatisticItem) -> Unit
 ) {
-    Card(modifier = modifier) {
+    Card() {
         Column(
             modifier = Modifier.padding(8.dp)
         ) {
